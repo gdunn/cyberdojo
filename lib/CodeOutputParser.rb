@@ -63,6 +63,23 @@ module CodeOutputParser
     return :green
   end
 
+  def self.parse_c_unittest(output)
+    exception_pattern = Regexp.new('Unhandled exception')
+    failure_pattern = Regexp.new('FAILURE')
+    red_pattern = Regexp.new('(.*)Assertion(.*)failed.')
+    syntax_error_pattern = Regexp.new(':(\d*): error')
+    make_error_pattern = Regexp.new('^make:')
+    makefile_error_pattern = Regexp.new('^makefile:')
+
+    return :red   if exception_pattern.match(output)
+    return :red   if failure_pattern.match(output)
+    return :red   if red_pattern.match(output)
+    return :amber if make_error_pattern.match(output)
+    return :amber if makefile_error_pattern.match(output)
+    return :amber if syntax_error_pattern.match(output)
+    return :green
+  end
+
   def self.parse_ruby_test_unit(output)
     ruby_pattern = Regexp.new('^(\d*) tests, (\d*) assertions, (\d*) failures, (\d*) errors')
     if match = ruby_pattern.match(output)
